@@ -67,16 +67,13 @@ AC_SUBST(PLATFORM_CAPS, LINUX)
 AC_SUBST(PLATFORM, linux)
 
 #AC_SUBST([AES_FLAG], ["-maes"])
-#
-#AX_CHECK_COMPILE_FLAG([-maes],[[AESNI_CXXFLAGS="-maes"]],,[[$CXXFLAG_WERROR]])
 
-#AX_CHECK_COMPILE_FLAG([-maes],[[AESNI_CXXFLAGS="-maes"]],,[[$CXXFLAG_WERROR]])
+# run autoreconf -fi
 
-TEMP_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS $AESNI_CXXFLAGS"
+TEMP_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -maes"
 AC_MSG_CHECKING(for AES-NI intrinsics)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-    #include <stdint.h>
     #include <wmmintrin.h>
   ]],[[
     __m128i x = _mm_aesimc_si128(_mm_setzero_si128());
@@ -84,11 +81,18 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  [ AC_MSG_RESULT(yes); enable_aesni=yes; AC_DEFINE(ENABLE_AESNI, 1, [Define this symbol to build code that uses AES-NI intrinsics]) ],
  [ AC_MSG_RESULT(no)]
 )
-CXXFLAGS="$TEMP_CXXFLAGS"
+CFLAGS="$TEMP_CFLAGS"
 
 AM_CONDITIONAL([ENABLE_AESNI],[test x$enable_aesni = xyes])
 
-AC_SUBST(AESNI_CXXFLAGS)
+if test "$enable_aesni" = "yes"
+then
+AC_SUBST([AESNI_CFLAGS], ["-maes"])
+# AC_MSG_NOTICE([$AESNI_CFLAGS])
+# echo $AESNI_CFLAGS
+fi
+
+#AC_SUBST(AESNI_CFLAGS)
 
 AC_OUTPUT([cfg.mk src/cfg.h src/tools/init.d.sh])
 
